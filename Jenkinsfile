@@ -1,50 +1,36 @@
-pipeline{
+pipeline {
     agent any
-    environment{
-        DOCKER_IMAGE="archanapatil2903/app-image"
-    }
-    stages{
-        stage('Clone Repository'){
-            steps{
-                git 'https://github.com/archanapatil2903//https://github.com/archana-cp/expt101.git'
-            }
-        }
-        stage('Build Docker Image'){
-            steps{
-                script{
-                    docker.build("${DOCKER_IMAGE}:latest")
-                }
-            }
-        }
-        stage('Login to Docker Hub'){
-            steps{
-                withCredential([usernamePassword(
-                     crendentialsId:'dockerhub-creds'
-                usernameVariable:'DOCKER_USER'
-                passwordVariable:'DOCKER_PASS'
 
-                )]){
-                    bat 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                }
+    stages {
 
+        stage('Checkout') {
+            steps {
+                checkout scm
             }
         }
-        stage('Push Docker Image'){
-            step{
-                script{
-                    docker.withRegistry('','dockerhub-creds'){
-                        docker.image("${Docker_Image}:latest").push()
-                    }
+
+        stage('Build Docker Image') {
+            steps {
+                bat 'docker build -t archanapatil2903/agoda:v1 .'
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat 'docker login -u "%DOCKER_USER%" -p "%DOCKER_PASS%"'
                 }
             }
         }
-    }
-    post{
-        success{
-            echo 'image successfully built and pushed to docker hub'
-        }
-        failure{
-            echo 'Pipeline failed'
+
+        stage('Push to Docker Hub') {
+            steps {
+                bat 'docker push archanapatil2903/agoda:v1'
+            }
         }
     }
 }
