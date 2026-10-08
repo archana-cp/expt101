@@ -1,7 +1,7 @@
 pipeline{
     agent any
     environment {
-        DOCKER_IMAGE="arundathi23hn/app23"
+        DOCKER_IMAGE="archanapatil2903/app"
     
     }
     stages{
